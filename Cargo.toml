@@ -1,0 +1,58 @@
+[package]
+name = "phone-imu-ws"
+version = "0.1.4"
+edition = "2024"
+license = "Apache-2.0"
+authors = ["nop <noplab90@gmail.com>"]
+repository = "https://github.com/MechanicalGirlDev/phone-imu-driver"
+readme = "README.md"
+description = "Smartphone-browser IMU source: single-origin HTTPS server (static web UI + WebSocket) that streams DeviceMotion/DeviceOrientation samples to a robot IMU driver"
+
+[lib]
+name = "phone_imu_ws"
+path = "src/lib.rs"
+
+[[bin]]
+name = "phone-imu"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# HTTP + WebSocket (single-origin static page + /ws).
+axum = { version = "0.8", features = ["ws"] }
+# HTTPS serving. The DeviceMotion API requires a secure context, and a WebSocket opened from
+# an HTTPS page must use wss://. When the page and the socket share one origin, the
+# self-signed certificate exception applies to wss as well, so this server terminates TLS
+# itself. The ring provider is selected explicitly (aws-lc-rs needs NASM/cmake on Windows
+# and makes the build heavy).
+axum-server = { version = "0.8", features = ["tls-rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+# First-run self-signed certificate generation (persisted in cert_dir, LAN IP baked into the SAN).
+rcgen = "0.14"
+# Static file serving (the web/ directory is served as-is).
+tower-http = { version = "0.7", features = ["fs"] }
+
+# CLI (standalone connectivity tool)
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "deny"
+missing_debug_implementations = "warn"
+unused_import_braces = "warn"
+unused_qualifications = "warn"
+unused_results = "warn"
+variant_size_differences = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+std_instead_of_core = "warn"
+std_instead_of_alloc = "warn"

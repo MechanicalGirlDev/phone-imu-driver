@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Phone IMU</title>
+    <meta name="description" content="Streams the phone's sensors as a robot IMU" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101216;
+        --panel: #1a1e26;
+        --border: #2c323e;
+        --text: #e8eaf0;
+        --dim: #8b93a3;
+        --accent: #4da3ff;
+        --ok: #3ecf8e;
+        --err: #ff6b6b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      main {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 1.25rem 1rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+
+      h1 {
+        font-size: 1.15rem;
+        margin: 0.2rem 0 0;
+        letter-spacing: 0.02em;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      label {
+        font-size: 0.78rem;
+        color: var(--dim);
+      }
+
+      input[type='text'] {
+        width: 100%;
+        padding: 0.55rem 0.6rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      button.primary {
+        width: 100%;
+        padding: 0.85rem;
+        border-radius: 10px;
+        border: none;
+        font-size: 1.05rem;
+        font-weight: 600;
+        background: var(--accent);
+        color: #06131f;
+        cursor: pointer;
+      }
+
+      button.primary.stop {
+        background: var(--err);
+      }
+
+      button.primary:active {
+        filter: brightness(0.85);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.35rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      .grid dt {
+        color: var(--dim);
+      }
+
+      .grid dd {
+        margin: 0;
+        font-family: ui-monospace, monospace;
+      }
+
+      .ok {
+        color: var(--ok);
+      }
+
+      .err {
+        color: var(--err);
+      }
+
+      .values {
+        font-family: ui-monospace, monospace;
+        font-size: 0.8rem;
+        line-height: 1.6;
+        white-space: pre;
+        overflow-x: auto;
+      }
+
+      .note {
+        font-size: 0.75rem;
+        color: var(--dim);
+        line-height: 1.5;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Phone IMU Streamer</h1>
+
+      <div class="panel">
+        <label for="ws-url">WebSocket URL</label>
+        <input id="ws-url" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <div class="row">
+          <input id="mock" type="checkbox" />
+          <label for="mock">Mock sensors (synthetic wave for connectivity checks on a PC)</label>
+        </div>
+        <button id="toggle" class="primary" type="button">Allow sensors and start</button>
+        <div id="error" class="err" hidden></div>
+        <div id="server-status" class="note" hidden></div>
+      </div>
+
+      <div class="panel">
+        <dl class="grid">
+          <dt>Connection</dt>
+          <dd id="conn" class="err">Disconnected</dd>
+          <dt>Send rate</dt>
+          <dd id="rate">0 Hz</dd>
+          <dt>Platform</dt>
+          <dd id="platform">unknown</dd>
+          <dt>motion / orientation</dt>
+          <dd id="seen">× / ×</dd>
+        </dl>
+      </div>
+
+      <div class="panel">
+        <label>Values being sent (device frame)</label>
+        <div id="values" class="values"></div>
+      </div>
+
+      <p class="note">
+        How to use: open this page on the same WiFi as the PC → accept the certificate warning once
+        → start. iOS shows a sensor permission dialog. The screen is kept awake (on browsers that
+        support Wake Lock). The yaw zero point is re-aligned on the receiving side at every new
+        connection.
+      </p>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

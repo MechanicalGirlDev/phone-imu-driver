@@ -52,6 +52,23 @@ let (handle, server) = phone_imu_ws::spawn(phone_imu_ws::PhoneImuServerConfig {
 let latest = handle.latest(); // raw device-frame sample with receive time and connection id
 ```
 
+## Reiny 0.7 integration
+
+`phone-imu-ws` is the HTTPS/WebSocket transport, and `phone-imu` remains a
+standalone connectivity tool. Reiny message schemas and deployment ownership
+belong to a consuming adapter.
+
+That adapter declares its typed IMU output in `main.yaml`, opens the named
+`Cloudy::output`, awaits `spawn` so certificate preparation and listener binding
+have succeeded, and then calls `Cloudy::ready()`. Phone connection availability,
+device-to-body conversion, sample age and connection-generation changes remain
+explicit application policies. Preserve the deployment/module namespace as
+publisher provenance.
+
+Retain the returned server task. On `Cloudy::shutdown()`, abort and await it so
+the adapter releases its listener before exiting; dropping the task handle
+alone does not cancel the server.
+
 ## Development
 
 ```text
